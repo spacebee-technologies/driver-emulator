@@ -1,0 +1,87 @@
+/*=============================================================================
+ * Author: Spacebeetech - Navegacion
+ * Date: 23/02/2023
+ * Board: Arduino Mega
+ * Entorno de programacion: Ide arduino 1.8.19
+ *
+ * Descripcion: Emulador EPOS4
+ *              Cambiar nodo ID de CanOpen en "CanOpen_Arduino.h"   
+ *              Cambiar diccionario de CanOpen en "Dictionary.h"
+ *===========================================================================*/
+
+#include <stdint.h>
+#include "CanOpen_Arduino.h"
+#include "Epos_emulator.h"
+#include "Define.h"
+
+Epos_emulator Epos1(Can_nodeid_client1, M1_Z_PIN, M1_nBits, M1_CPT, M1_ratioGB, M1_En, M1_in1, M1_in2, 0);
+Epos_emulator Epos2(Can_nodeid_client2, M2_Z_PIN, M2_nBits, M2_CPT, M2_ratioGB, M2_En, M2_in1, M2_in2, 1);
+Epos_emulator Epos3(Can_nodeid_client3, M3_Z_PIN, M3_nBits, M3_CPT, M3_ratioGB, M3_En, M3_in1, M3_in2, 2);
+Epos_emulator Epos4(Can_nodeid_client4, M4_Z_PIN, M4_nBits, M4_CPT, M4_ratioGB, M4_En, M4_in1, M4_in2, 3);
+Epos_emulator Epos5(Can_nodeid_client5, M5_Z_PIN, M5_nBits, M5_CPT, M5_ratioGB, M5_En, M5_in1, M5_in2, 4);
+Epos_emulator Epos6(Can_nodeid_client6, M6_Z_PIN, M6_nBits, M6_CPT, M6_ratioGB, M6_En, M6_in1, M6_in2, 5);
+
+
+
+void setup() {
+
+  Serial.begin(115200);
+
+  //Inicializo Emulador Epos
+  Epos_Emulator_init();   //Si o si se debe llamar antes de CANope_init
+  
+  //Inicializo CANopen
+  uint8_t resultado=CANopen_init();
+  if (resultado == 0){ Serial.println("CANopen was initialized and is in pre-operational mode"); }
+  if (resultado == 1){ Serial.println("Error al mandar mensaje Boot_Up");  CANopen_STOP(); }
+ 
+  //Configuro interrupciones del encoder (no logre que se configuren dentro de la clase)
+  attachInterrupt(digitalPinToInterrupt(M1_Z_PIN), interrupt_E1, RISING);
+  attachInterrupt(digitalPinToInterrupt(M2_Z_PIN), interrupt_E2, RISING);
+  attachInterrupt(digitalPinToInterrupt(M3_Z_PIN), interrupt_E3, RISING);
+  attachInterrupt(digitalPinToInterrupt(M4_Z_PIN), interrupt_E4, RISING);
+  attachInterrupt(digitalPinToInterrupt(M5_Z_PIN), interrupt_E5, RISING);
+  attachInterrupt(digitalPinToInterrupt(M6_Z_PIN), interrupt_E6, RISING);
+  
+  //Configuro interupcion que genera el mudolo can cuando recibe mensaje
+  pinMode(ModuloCAN_INTERRUPT_PIN, INPUT_PULLUP);
+  PCICR |= (1 << PCIE1);     // Habilita la interrupción para el grupo PCINT[23:16] (PCMSK2)
+  PCMSK1 |= (1 << PCINT10);   // Habilita la interrupción para el pin digital 14 (PCINT20)
+  sei();                     // Habilita las interrupciones globales
+}
+
+
+ISR(PCINT1_vect) {
+  sei();
+  if(digitalRead(ModuloCAN_INTERRUPT_PIN)==LOW){  //Si la interupcion fue por flanco de bajada
+    Epos_CanOpen_Consult();     //Consulta si hay mensajes nuevos disponibles de can y los procesa segun sea lectura o escritura de diccionario
+    
+  }
+}
+
+void loop() {
+  //Epos_CanOpen_Consult();     //Consulta si hay mensajes nuevos disponibles de can y los procesa segun sea lectura o escritura de diccionario
+  Epos1.Execute();            //Ejecuta el proceso de la emulacion del EPOS1. Busca en su OD el modo de operacion, habilitacion, setpoint, etc y ejecuta el control del motor.
+  Epos2.Execute();            //Idem
+  Epos3.Execute();            //Idem
+  Epos4.Execute();            //Idem
+  Epos5.Execute();            //Idem
+  Epos6.Execute();            //Idem
+
+  Epos1.obtener_setpoint();
+  Epos2.obtener_setpoint();
+  Epos3.obtener_setpoint();
+  Epos4.obtener_setpoint();
+  Epos5.obtener_setpoint();
+  Epos6.obtener_setpoint();
+
+  delay(1);
+  
+}
+
+void interrupt_E1(){  Epos1.interruptZ(); }
+void interrupt_E2(){  Epos2.interruptZ(); }
+void interrupt_E3(){  Epos3.interruptZ(); }
+void interrupt_E4(){  Epos4.interruptZ(); }
+void interrupt_E5(){  Epos5.interruptZ(); }
+void interrupt_E6(){  Epos6.interruptZ(); }
