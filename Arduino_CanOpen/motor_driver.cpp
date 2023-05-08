@@ -21,7 +21,13 @@ MotorDriver::MotorDriver(uint8_t enable, uint8_t in1, uint8_t in2) {
     digitalWrite(_in2, LOW);
 }
 
-int MotorDriver::updateRotation(double error) {
+/**
+ * @brief Computes and update the motor direction if the error is above threshold
+ *
+ * @param error In degrees, the absolute value is taken
+ * @return int Computed direction
+ */
+int MotorDriver::computeMotorDirection(double error) {
     int direction = 0;
     if (error >= 0) {
         direction = 0;
@@ -35,6 +41,9 @@ int MotorDriver::updateRotation(double error) {
     return direction;
 }
 
+/**
+ * @brief Set PWM value for motor driver
+ */
 void MotorDriver::updatePwm(int pwm) {
     if (pwm > _pwmMax) { pwm = _pwmMax; }
     if (pwm < _pwmMin) { pwm = _pwmMin; }

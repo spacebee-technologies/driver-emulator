@@ -13,7 +13,7 @@ class MotorDriver {
 
     public:
         MotorDriver(uint8_t enable, uint8_t in1, uint8_t in2);
-        int updateRotation(double error);
+        int computeMotorDirection(double error);
         void updatePwm(int pwm);
 };
 

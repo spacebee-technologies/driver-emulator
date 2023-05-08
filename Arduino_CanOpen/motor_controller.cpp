@@ -14,9 +14,14 @@ MotorController::MotorController(EncoderManager *encoder, MotorDriver *motorDriv
     _errorThreshold = DEFAULT_ERROR_THRESHOLD;
 }
 
+/**
+ * @brief Compute and update motor driver parameters (PWM and direction)
+ *
+ * @param targetPosition Expected position in degrees
+ */
 void MotorController::update(double targetPosition) {
     double error = targetPosition - _encoder->getCurrentPosition();
-    _rotDirection = _motorDriver->updateRotation(error);
+    _rotDirection = _motorDriver->computeMotorDirection(error);
     int pwm = 0;
     if (abs(error) > _errorThreshold) {
         pwm = abs(error) * _k;
@@ -24,10 +29,16 @@ void MotorController::update(double targetPosition) {
     _motorDriver->updatePwm(pwm);
 }
 
+/**
+ * @brief Reset encoder tick count to zero
+ */
 void MotorController::resetEncoderCount() {
     _encoder->resetCount();
 }
 
+/**
+ * @brief Interrupt handler to increment or decrement encoder tick count
+ */
 void MotorController::interruptZ() {
     _encoder->updateCount(_rotDirection);
 }
