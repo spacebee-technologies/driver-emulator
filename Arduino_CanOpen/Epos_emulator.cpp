@@ -13,70 +13,17 @@
 #include "CanOpen_Arduino.h"
 #include "Define.h"
 
-const int PWM_MAX = 20;
-const int PWM_MIN = 5;
-const double threshold=2;
-
 uint8_t ids[CANopen_cantNodos_client]={Can_nodeid_client3, Can_nodeid_client2, Can_nodeid_client1, Can_nodeid_client4, Can_nodeid_client5, Can_nodeid_client6};
 
-Epos_emulator::Epos_emulator(uint8_t Can_nodeid, uint8_t Z_PIN, int nBits, int CPT, int ratioGB, uint8_t En, uint8_t in1, uint8_t in2, uint8_t numeroDiccionario){
+Epos_emulator::Epos_emulator(uint8_t Can_nodeid, int nBits, int CPT, MotorController *controller, uint8_t numeroDiccionario){
     _nodeid = Can_nodeid;
-    _En = En;
-    _in1 = in1;
-    _in2 = in2;
     _numeroDiccionario = numeroDiccionario;
-    _Z_PIN = Z_PIN;
     _nBits = nBits;
     _CPT = CPT;
-    _ratioGB = ratioGB;
-
-    pinMode(En, OUTPUT);
-    pinMode(in1, OUTPUT);
-    pinMode(in2, OUTPUT);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
 
     //Valores iniciales:
-    _currentPos = 0.0; // degrees
-    _rotDirection = 0; // CW
-    _error = 0;        // degrees
+    _controller = controller;
     _setpoint = 360;   // degrees
-    _count = 0;
-    _PWM = 0;
-    _threshold = 2;    // degrees    
-}
-
-int updateRotation(int inA, int inB, double error)
-{
-  int rotDirection = 0;
-  if (error >= 0)
-  {
-    rotDirection = 0;
-    digitalWrite(inA, HIGH);
-    digitalWrite(inB, LOW);
-  }
-  else
-  {
-    rotDirection = 1;
-    digitalWrite(inA, LOW);
-    digitalWrite(inB, HIGH);
-  }
-  return rotDirection;
-}
-
-void controlLoop(double error, double K, int en)
-{
-  int PWM = 0;
-  if (abs(error) > threshold)
-  {
-    PWM = abs(error) * K;
-    if (PWM > PWM_MAX)
-      PWM = PWM_MAX;
-    if (PWM < PWM_MIN)
-      PWM = PWM_MIN;
-  }
-
-  analogWrite(en, PWM); // Send PWM signal to L298N Enable pin
 }
 
 void Epos_emulator::init(){
@@ -110,7 +57,7 @@ void Epos_emulator::Execute(){
         //Muevo el motor con pwm fijo
         //analogWrite(pin_pwm1_motor,127);
       }else{
-        _count=0;
+        _controller->resetEncoderCount();
         _set_cero=1;
       }
     }else{                 
@@ -127,11 +74,7 @@ void Epos_emulator::Execute(){
         Serial.print(" Ganancia P: ");
         Serial.println(K);
         */
-        double K=1;
-        _error=_setpoint-_count*(360.0 / _ratioGB);
-        //Serial.println(_count);
-        _rotDirection = updateRotation(_in2,_in1,_error);
-        controlLoop(_error, K , _En);
+        _controller->update(_setpoint);
     }
   }else{
     CANopen_Read_Dictionary(0x6060, 0x00, &dataa, 8, _nodeid);              //Obtengo modo
@@ -148,10 +91,7 @@ void Epos_emulator::Execute(){
 }
 
 void Epos_emulator::interruptZ() {
-  if (!_rotDirection)
-    _count++;
-  else
-    _count--;
+    _controller->interruptZ();
 }
 
 void Epos_emulator::obtener_setpoint() {

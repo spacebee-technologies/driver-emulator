@@ -9,18 +9,51 @@
  *              Cambiar diccionario de CanOpen en "Dictionary.h"
  *===========================================================================*/
 
-#include <stdint.h>
 #include "CanOpen_Arduino.h"
+
+#include <stdint.h>
+
+#include "encoder_manager.h"
+#include "motor_driver.h"
+#include "motor_controller.h"
 #include "Epos_emulator.h"
 #include "Define.h"
 
-Epos_emulator Epos1(Can_nodeid_client1, M1_Z_PIN, M1_nBits, M1_CPT, M1_ratioGB, M1_En, M1_in1, M1_in2, 0);
-Epos_emulator Epos2(Can_nodeid_client2, M2_Z_PIN, M2_nBits, M2_CPT, M2_ratioGB, M2_En, M2_in1, M2_in2, 1);
-Epos_emulator Epos3(Can_nodeid_client3, M3_Z_PIN, M3_nBits, M3_CPT, M3_ratioGB, M3_En, M3_in1, M3_in2, 2);
-Epos_emulator Epos4(Can_nodeid_client4, M4_Z_PIN, M4_nBits, M4_CPT, M4_ratioGB, M4_En, M4_in1, M4_in2, 3);
-Epos_emulator Epos5(Can_nodeid_client5, M5_Z_PIN, M5_nBits, M5_CPT, M5_ratioGB, M5_En, M5_in1, M5_in2, 4);
-Epos_emulator Epos6(Can_nodeid_client6, M6_Z_PIN, M6_nBits, M6_CPT, M6_ratioGB, M6_En, M6_in1, M6_in2, 5);
+// Motor 1
+EncoderManager encoder1(M1_ratioGB);
+MotorDriver motorDriver1(M1_En, M1_in1, M1_in2);
+MotorController controller1(&encoder1, &motorDriver1);
+Epos_emulator Epos1(Can_nodeid_client1, M1_nBits, M1_CPT, &controller1, 0);
 
+// Motor 2
+EncoderManager encoder2(M2_ratioGB);
+MotorDriver motorDriver2(M2_En, M2_in1, M2_in2);
+MotorController controller2(&encoder2, &motorDriver2);
+Epos_emulator Epos2(Can_nodeid_client2, M2_nBits, M2_CPT, &controller2, 1);
+
+// Motor 3
+EncoderManager encoder3(M3_ratioGB);
+MotorDriver motorDriver3(M3_En, M3_in1, M3_in2);
+MotorController controller3(&encoder3, &motorDriver3);
+Epos_emulator Epos3(Can_nodeid_client3, M3_nBits, M3_CPT, &controller3, 2);
+
+// Motor 4
+EncoderManager encoder4(M4_ratioGB);
+MotorDriver motorDriver4(M4_En, M4_in1, M4_in2);
+MotorController controller4(&encoder4, &motorDriver4);
+Epos_emulator Epos4(Can_nodeid_client4, M4_nBits, M4_CPT, &controller4, 3);
+
+// Motor 5
+EncoderManager encoder5(M5_ratioGB);
+MotorDriver motorDriver5(M5_En, M5_in1, M5_in2);
+MotorController controller5(&encoder5, &motorDriver5);
+Epos_emulator Epos5(Can_nodeid_client5, M5_nBits, M5_CPT, &controller5, 4);
+
+// Motor 6
+EncoderManager encoder6(M6_ratioGB);
+MotorDriver motorDriver6(M6_En, M6_in1, M6_in2);
+MotorController controller6(&encoder6, &motorDriver6);
+Epos_emulator Epos6(Can_nodeid_client6, M6_nBits, M6_CPT, &controller6, 5);
 
 
 void setup() {
