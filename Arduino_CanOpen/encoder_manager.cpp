@@ -6,10 +6,10 @@ EncoderManager::EncoderManager(int ratioGearbox) {
 }
 
 /**
- * @brief Get the absolute position in degrees relative to the physical initial
- *        position
+ * @brief Get the absolute position of the encoder in the [0, 360] degrees
+ *        range, where the value 0 corresponds to the physical initial position
  *
- * @return double Absolute position in degrees
+ * @return double Absolute position in degrees in the [0, 360] range
  */
 double EncoderManager::getCurrentPosition() {
     return _count * (360.0 / _ratioGearbox);
@@ -21,10 +21,13 @@ double EncoderManager::getCurrentPosition() {
  * @param direction 0 to increment and any other value to decrement
  */
 void EncoderManager::updateCount(int direction) {
-    if (!direction)
+    if (!direction) {
         _count++;
-    else
+    } else {
         _count--;
+    }
+    if (_count > _ratioGearbox) { _count = 0; }
+    if (_count < 0) { _count = _ratioGearbox; }
 }
 
 /**

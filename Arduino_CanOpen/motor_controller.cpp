@@ -17,10 +17,10 @@ MotorController::MotorController(EncoderManager *encoder, MotorDriver *motorDriv
 /**
  * @brief Compute and update motor driver parameters (PWM and direction)
  *
- * @param targetPosition Expected position in degrees
+ * @param targetPosition Expected position in degrees in the [0, 360] range
  */
 void MotorController::update(double targetPosition) {
-    double error = targetPosition - _encoder->getCurrentPosition();
+    double error = getError(targetPosition);
     _rotDirection = _motorDriver->computeMotorDirection(error);
     int pwm = 0;
     if (abs(error) > _errorThreshold) {
@@ -41,4 +41,21 @@ void MotorController::resetEncoderCount() {
  */
 void MotorController::interruptZ() {
     _encoder->updateCount(_rotDirection);
+}
+
+/**
+ * @brief Compute and get the direct or the complementary errors
+ *
+ * @param targetPosition Target position in the [0, 360] degrees range
+ * @return double Computed error
+ */
+double MotorController::getError(double targetPosition) {
+    double e1 = targetPosition - _encoder->getCurrentPosition();
+    double e2 = targetPosition + 360 - _encoder->getCurrentPosition();
+    double e3 = targetPosition - 360 - _encoder->getCurrentPosition();
+    if ((abs(e1) <= abs(e2)) && (abs(e1) <= abs(e3)))
+        return e1;
+    if ((abs(e2) <= abs(e1)) && (abs(e2) <= abs(e3)))
+        return e2;
+    return e3;
 }
