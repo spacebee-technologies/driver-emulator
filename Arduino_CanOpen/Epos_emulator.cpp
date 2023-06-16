@@ -8,10 +8,13 @@
  *===========================================================================*/
 
 /*=====================[ Inclusiones ]============================*/
-#include "Epos_emulator.h"
 #include <Arduino.h>
+
+#include "Epos_emulator.h"
 #include "CanOpen_Arduino.h"
 #include "Define.h"
+
+#define ANGLE_FACTOR 100
 
 uint8_t ids[CANopen_cantNodos_client]={Can_nodeid_client3, Can_nodeid_client2, Can_nodeid_client1, Can_nodeid_client4, Can_nodeid_client5, Can_nodeid_client6};
 
@@ -63,7 +66,7 @@ void Epos_emulator::Execute(){
     }else{                 
         CANopen_Read_Dictionary(0x607A, 0x00, &data, 32, _nodeid);        //Obtengo setpoint desde el diccionario
         //Control proporcional para posicion
-        _setpoint=data;
+        _setpoint = (double)data / ANGLE_FACTOR;
         CANopen_Read_Dictionary(0x30A1, 0x01, &data, 32, _nodeid);        //Obtengo k desde el diccionario
         /*
         Serial.print("Nodo: ");
