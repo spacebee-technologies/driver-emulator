@@ -6,6 +6,8 @@
 
 class MotorController {
     private:
+        double getError(double targetPosition);
+
         EncoderManager *_encoder;
         MotorDriver *_motorDriver;
         int _rotDirection;
