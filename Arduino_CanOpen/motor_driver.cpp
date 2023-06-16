@@ -31,12 +31,12 @@ int MotorDriver::computeMotorDirection(double error) {
     int direction = 0;
     if (error >= 0) {
         direction = 0;
-        digitalWrite(_in1, LOW);
-        digitalWrite(_in2, HIGH);
-    } else {
-        direction = 1;
         digitalWrite(_in1, HIGH);
         digitalWrite(_in2, LOW);
+    } else {
+        direction = 1;
+        digitalWrite(_in1, LOW);
+        digitalWrite(_in2, HIGH);
     }
     return direction;
 }
