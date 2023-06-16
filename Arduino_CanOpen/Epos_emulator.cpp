@@ -33,15 +33,15 @@ void Epos_emulator::init(){
 void Epos_emulator::Execute(){
   
   //Variables para obtener valores del diccionario
-  uint32_t dataa=0;
+  uint32_t data=0;
 
   uint16_t index2=0x6060;
   uint8_t subindex2=0x00;
   
   //Verificar si el modo esta en on o off para activar o desactivar enable puente H
-  CANopen_Read_Dictionary(0x6040, 0x00, &dataa, 16, _nodeid);            //Obtengo estado driver desde el diccionario
+  CANopen_Read_Dictionary(0x6040, 0x00, &data, 16, _nodeid);            //Obtengo estado driver desde el diccionario
   /*
-  if((dataa & 0x0F)==0x07){                                              //Si los primero 4 bytes estan en "0111", el epos esta en modo "operation enabled"
+  if((data & 0x0F)==0x07){                                              //Si los primero 4 bytes estan en "0111", el epos esta en modo "operation enabled"
     digitalWrite(_En, HIGH);                                             //Activo el puente H
   }else{
     digitalWrite(_En, LOW);                                              //Desactivo el puente H
@@ -49,9 +49,9 @@ void Epos_emulator::Execute(){
   */
 
   //Obtengo modo de operacion del epos
-  CANopen_Read_Dictionary(0x6060, 0x00, &dataa, 8, _nodeid);             //Obtengo modo
+  CANopen_Read_Dictionary(0x6060, 0x00, &data, 8, _nodeid);             //Obtengo modo
   
-  if(dataa == 0x01){                                                     //Si el modo es PPM
+  if(data == 0x01){                                                     //Si el modo es PPM
     if(_set_cero==0){                                                    //Si nunca se seteo en cero, hago un home
       if(true==false){                                                   //Mientras el encoder no detecte posicion cero
         //Muevo el motor con pwm fijo
@@ -61,31 +61,31 @@ void Epos_emulator::Execute(){
         _set_cero=1;
       }
     }else{                 
-        CANopen_Read_Dictionary(0x607A, 0x00, &dataa, 32, _nodeid);        //Obtengo setpoint desde el diccionario
+        CANopen_Read_Dictionary(0x607A, 0x00, &data, 32, _nodeid);        //Obtengo setpoint desde el diccionario
         //Control proporcional para posicion
-        _setpoint=dataa;
-        CANopen_Read_Dictionary(0x30A1, 0x01, &dataa, 32, _nodeid);        //Obtengo k desde el diccionario
+        _setpoint=data;
+        CANopen_Read_Dictionary(0x30A1, 0x01, &data, 32, _nodeid);        //Obtengo k desde el diccionario
         /*
         Serial.print("Nodo: ");
         Serial.print(_nodeid);
         Serial.print(" Ganancia P: ");
-        Serial.print(dataa);
-        double K=-dataa/1000000;
+        Serial.print(data);
+        double K=-data/1000000;
         Serial.print(" Ganancia P: ");
         Serial.println(K);
         */
         _controller->update(_setpoint);
     }
   }else{
-    CANopen_Read_Dictionary(0x6060, 0x00, &dataa, 8, _nodeid);              //Obtengo modo
-    if(dataa == 0x09){                                                      //Si esta en modo velocidad
+    CANopen_Read_Dictionary(0x6060, 0x00, &data, 8, _nodeid);              //Obtengo modo
+    if(data == 0x09){                                                      //Si esta en modo velocidad
         //Serial.print("PWM: ");
-        CANopen_Read_Dictionary(0x60FF, 0x00, &dataa, 32, _nodeid);         //Obtengo setpoint desde el diccionario
-        _setpoint=dataa;
+        CANopen_Read_Dictionary(0x60FF, 0x00, &data, 32, _nodeid);         //Obtengo setpoint desde el diccionario
+        _setpoint=data;
         //Control Proporcional para velocidad
       
     }else{
-      //Serial.print("Modo: "); Serial.println(dataa);
+      //Serial.print("Modo: "); Serial.println(data);
     }
   }
 }
@@ -96,15 +96,15 @@ void Epos_emulator::interruptZ() {
 
 void Epos_emulator::obtener_setpoint() {
    //Variables para obtener valores del diccionario
-  uint32_t dataa=0;
-  CANopen_Read_Dictionary(0x60FF, 0x00, &dataa, 32, _nodeid);        //Obtengo setpoint desde el diccionario
+  uint32_t data=0;
+  CANopen_Read_Dictionary(0x60FF, 0x00, &data, 32, _nodeid);        //Obtengo setpoint desde el diccionario
  Serial.print("Nodo: ");
  Serial.print(_nodeid);
  Serial.print(" setpoint VEL: ");
- Serial.print(dataa);
+ Serial.print(data);
  Serial.print(" pos: ");
- CANopen_Read_Dictionary(0x607A, 0x00, &dataa, 32, _nodeid);        //Obtengo setpoint desde el diccionario
- Serial.println(dataa);
+ CANopen_Read_Dictionary(0x607A, 0x00, &data, 32, _nodeid);        //Obtengo setpoint desde el diccionario
+ Serial.println(data);
 }
 
 void Epos_Emulator_init(void){
