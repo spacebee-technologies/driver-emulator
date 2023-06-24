@@ -55,6 +55,128 @@ MotorDriver motorDriver6(M6_En, M6_in1, M6_in2);
 MotorController controller6(&encoder6, &motorDriver6);
 Epos_emulator Epos6(Can_nodeid_client6, M6_nBits, M6_CPT, &controller6, 5);
 
+double setpoints[] = {275, 91,
+                      280, 92,
+                      285, 93,
+                      290, 94,
+                      295, 95,
+                      300, 96,
+                      305, 97,
+                      310, 98,
+                      315, 99,
+                      320, 100,
+                      325, 101,
+                      330, 102,
+                      335, 103,
+                      340, 104,
+                      345, 105,
+                      350, 106,
+                      355, 107,
+                      360, 108,
+                      0, 109,
+                      5, 110,
+                      10, 111,
+                      15, 112,
+                      20, 113,
+                      25, 114,
+                      30, 115,
+                      35, 116,
+                      40, 117,
+                      45, 118,
+                      50, 119,
+                      55, 120,
+                      60, 125,
+                      65, 130,
+                      66, 135,
+                      67, 140,
+                      68, 145,
+                      69, 150,
+                      70, 155,
+                      71, 160,
+                      72, 165,
+                      73, 170,
+                      74, 175,
+                      75, 180,
+                      76, 185,
+                      77, 190,
+                      78, 195,
+                      79, 200,
+                      80, 205,
+                      81, 210,
+                      82, 215,
+                      83, 220,
+                      84, 225,
+                      85, 230,
+                      86, 235,
+                      87, 240,
+                      88, 245,
+                      89, 250,
+                      90, 255,
+                      91, 260,
+                      92, 265,
+                      93, 270,
+                      94, 275,
+                      95, 280,
+                      96, 285,
+                      97, 290,
+                      98, 295,
+                      99, 300,
+                      100, 305,
+                      101, 310,
+                      102, 315,
+                      103, 320,
+                      104, 325,
+                      105, 330,
+                      106, 335,
+                      107, 340,
+                      108, 345,
+                      109, 350,
+                      110, 355,
+                      111, 360,
+                      112, 0,
+                      113, 5,
+                      114, 10,
+                      115, 15,
+                      116, 20,
+                      117, 25,
+                      118, 30,
+                      119, 35,
+                      120, 40,
+                      125, 45,
+                      130, 50,
+                      135, 55,
+                      140, 60,
+                      145, 65,
+                      150, 66,
+                      155, 67,
+                      160, 68,
+                      165, 69,
+                      170, 70,
+                      175, 71,
+                      180, 72,
+                      185, 73,
+                      190, 74,
+                      195, 75,
+                      200, 76,
+                      205, 77,
+                      210, 78,
+                      215, 79,
+                      220, 80,
+                      225, 81,
+                      230, 82,
+                      235, 83,
+                      240, 84,
+                      245, 85,
+                      250, 86,
+                      255, 87,
+                      260, 88,
+                      265, 89,
+                      270, 90};
+double setpoint1;
+double setpoint2;
+double t0;
+double t1;
+int i;
 
 void setup() {
 
@@ -81,6 +203,17 @@ void setup() {
   PCICR |= (1 << PCIE1);     // Habilita la interrupción para el grupo PCINT[23:16] (PCMSK2)
   PCMSK1 |= (1 << PCINT10);   // Habilita la interrupción para el pin digital 14 (PCINT20)
   sei();                     // Habilita las interrupciones globales
+
+  controller1.resetEncoderCount();
+  controller2.resetEncoderCount();
+  controller3.resetEncoderCount();
+  controller4.resetEncoderCount();
+  controller5.resetEncoderCount();
+  controller6.resetEncoderCount();
+
+  t0 = millis();
+  t1 = millis();
+  i = 0;
 }
 
 
@@ -93,23 +226,21 @@ ISR(PCINT1_vect) {
 }
 
 void loop() {
-  //Epos_CanOpen_Consult();     //Consulta si hay mensajes nuevos disponibles de can y los procesa segun sea lectura o escritura de diccionario
-  Epos1.Execute();            //Ejecuta el proceso de la emulacion del EPOS1. Busca en su OD el modo de operacion, habilitacion, setpoint, etc y ejecuta el control del motor.
-  Epos2.Execute();            //Idem
-  Epos3.Execute();            //Idem
-  Epos4.Execute();            //Idem
-  Epos5.Execute();            //Idem
-  Epos6.Execute();            //Idem
-
-  Epos1.obtener_setpoint();
-  Epos2.obtener_setpoint();
-  Epos3.obtener_setpoint();
-  Epos4.obtener_setpoint();
-  Epos5.obtener_setpoint();
-  Epos6.obtener_setpoint();
-
-  delay(1);
-  
+  t1 = millis();
+  if (t1 - t0 > 100) {
+    setpoint1 = setpoints[2*i];
+    setpoint2 = setpoints[2*i+1];
+    Serial.print("i = "); Serial.print(i); Serial.print(" - setpoint1 = "); Serial.print(setpoint1); Serial.print(" - setpoint2 = "); Serial.println(setpoint2);
+    i++;
+    if (i >= sizeof(setpoints)/sizeof(double)/2) { i = 0; }
+    t0 = t1;
+  }
+  Epos1.Execute(setpoint1);            //Ejecuta el proceso de la emulacion del EPOS1. Busca en su OD el modo de operacion, habilitacion, setpoint, etc y ejecuta el control del motor.
+  Epos2.Execute(setpoint2);            //Idem
+  Epos3.Execute(setpoint1);            //Idem
+  Epos4.Execute(setpoint2);            //Idem
+  Epos5.Execute(setpoint1);            //Idem
+  Epos6.Execute(setpoint2);            //Idem
 }
 
 void interrupt_E1(){  Epos1.interruptZ(); }

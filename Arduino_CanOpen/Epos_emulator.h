@@ -31,7 +31,7 @@ class Epos_emulator
     public: 
         Epos_emulator(uint8_t Can_nodeid, int nBits, int CPT, MotorController *controller, uint8_t numeroDiccionario);
         void init();
-        void Execute();
+        void Execute(double newSetpoint);
         void interruptZ();
         void obtener_setpoint();
 };
