@@ -364,7 +364,10 @@ uint8_t CANopen_SDO_Expedited_Read(uint16_t *index, uint8_t *subindex, uint8_t *
                 if(canMsg_rec.data[0]==0x23){                             //Si el comando SDO es escritura de 4 bytes
                     *index=(canMsg_rec.data[2]<<8)+canMsg_rec.data[1];    //Paso index
                     *subindex=canMsg_rec.data[3];                         //Paso subindex
-                    uint32_t data=(canMsg_rec.data[7]<<24)+(canMsg_rec.data[6]<<16)+(canMsg_rec.data[5]<<8)+canMsg_rec.data[4];
+                    uint32_t data = ((uint32_t)canMsg_rec.data[7] << 24) +
+                                    ((uint32_t)canMsg_rec.data[6] << 16) +
+                                    ((uint32_t)canMsg_rec.data[5] << 8) +
+                                    ((uint32_t)canMsg_rec.data[4] << 0);
                     CANopen_Write_Dictionary(*index, *subindex, data, 32, CANopen_nodeid); //Escribo diccionario de objetos
                     
                     retornar = 0;                                         //Indico que se retorna ok

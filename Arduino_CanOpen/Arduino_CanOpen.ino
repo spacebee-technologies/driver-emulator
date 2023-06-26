@@ -93,7 +93,6 @@ ISR(PCINT1_vect) {
 }
 
 void loop() {
-  //Epos_CanOpen_Consult();     //Consulta si hay mensajes nuevos disponibles de can y los procesa segun sea lectura o escritura de diccionario
   Epos1.Execute();            //Ejecuta el proceso de la emulacion del EPOS1. Busca en su OD el modo de operacion, habilitacion, setpoint, etc y ejecuta el control del motor.
   Epos2.Execute();            //Idem
   Epos3.Execute();            //Idem
@@ -101,15 +100,7 @@ void loop() {
   Epos5.Execute();            //Idem
   Epos6.Execute();            //Idem
 
-  Epos1.obtener_setpoint();
-  Epos2.obtener_setpoint();
-  Epos3.obtener_setpoint();
-  Epos4.obtener_setpoint();
-  Epos5.obtener_setpoint();
-  Epos6.obtener_setpoint();
-
   delay(1);
-  
 }
 
 void interrupt_E1(){  Epos1.interruptZ(); }
