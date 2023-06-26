@@ -66,7 +66,11 @@ void Epos_emulator::Execute(){
     }else{                 
         CANopen_Read_Dictionary(0x607A, 0x00, &data, 32, _nodeid);        //Obtengo setpoint desde el diccionario
         //Control proporcional para posicion
-        _setpoint = (double)data / ANGLE_FACTOR;
+        double newSetpoint = (double)data / ANGLE_FACTOR;
+        if (_setpoint != newSetpoint) {
+          Serial.print("newSetpoint = "); Serial.println(newSetpoint);
+          _setpoint = newSetpoint;
+        }
         CANopen_Read_Dictionary(0x30A1, 0x01, &data, 32, _nodeid);        //Obtengo k desde el diccionario
         /*
         Serial.print("Nodo: ");
