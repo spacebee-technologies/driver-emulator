@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 #define DEFAULT_PROPORTIONAL_COEFFICIENT 1
-#define DEFAULT_ERROR_THRESHOLD 2
+#define DEFAULT_ERROR_THRESHOLD 0.5
 
 MotorController::MotorController(EncoderManager *encoder, MotorDriver *motorDriver) {
     _encoder = encoder;
