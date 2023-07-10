@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 #define DEFAULT_PWM_MAX 20
-#define DEFAULT_PWM_MIN 5
+#define DEFAULT_PWM_MIN 0
 
 MotorDriver::MotorDriver(uint8_t enable, uint8_t in1, uint8_t in2) {
     _enable = enable;
